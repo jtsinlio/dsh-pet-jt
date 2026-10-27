@@ -1,5 +1,7 @@
 # dsh-pet-jt
 
+<p align="center"><img src="assets/logo-jt.png" width="128" alt="dsh-pet-jt：Q 版 DeepSeek 小鲸鱼" /></p>
+
 > **dsh-pet 的个性化增强分支**（JT = 自己的增强版）：整套桌宠能力原样保留，另加两块设置——
 > **定时提醒**（自定义提示语，气泡复用对话气泡）与**随机出现 / 隐藏频率**（各 1–120 分钟随机）。
 > 可与原版 [`dsh-pet`](https://github.com/PC2005-cloud/dsh-pet) **同时安装**，两份设置互不影响。
