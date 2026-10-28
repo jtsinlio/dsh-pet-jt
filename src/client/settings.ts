@@ -215,7 +215,7 @@ export const zh = {
   // 卡片标题 + 卡片级说明（说明都进问号，不再占一行小字）
   petCardTitle: '宠物配置',
   petCardHint:
-    '每只宠物独立配置：名字 / 大小 / 显示位置 / 位置 / 偏移 / 四个功能开关。改完点最下面的「保存」即时生效。',
+    '每只宠物独立配置：名字 / 大小 / 显示位置 / 位置 / 偏移 / 四个功能开关。改完点最下面的「保存」即时生效。桌面上双击宠物 = 查看余额（与右键菜单同一动作）。',
   globalTitle: '全局开关',
   globalHint:
     '所有宠物共用（pet pack 可在自己种类文件里单独覆盖）。这几个开关只改本地状态，随「保存」整包写入用户配置（不做即时写入）；系统通知在保存后即时重读，无需刷新页面。',
@@ -401,7 +401,7 @@ export const zh = {
   // ===== 本分支新增：随机出现 / 隐藏频率 =====
   cycleTitle: '随机出现 / 隐藏频率',
   cycleHint:
-    '开启后桌宠会自己离开桌面再回来：出现后随机停留一段时间再隐藏，隐藏后随机一段时间再出现。四个数值单位都是分钟、各自 1~120，且最短不能大于最长。触发一次说话（碎碎念 / 对话 / 定时提醒）会让它立刻现身，并重新计算下一次隐藏时间。作用在浏览器 overlay（网页里的桌宠）；桌面模式是独立的透明窗口渲染器，目前不受此项影响。',
+    '开启后桌宠会自己离开桌面再回来：出现后随机停留一段时间再隐藏，隐藏后随机一段时间再出现。四个数值单位都是分钟、各自 1~120，且最短不能大于最长。触发一次说话（碎碎念 / 对话 / 定时提醒）会让它立刻现身，并重新计算下一次隐藏时间。网页里的桌宠与桌面模式的透明窗口宠物都生效（桌面端是整窗隐藏，不占点击）。',
   cycleToggle: '启用随机出现 / 隐藏',
   cycleToggleHint: '关闭 = 一直显示（与原版行为一致）。只影响"看不看得见"，不动配置、动画与对话记忆。',
   cycleVisibleMin: '出现后最短停留（分钟）',
@@ -421,7 +421,7 @@ export const en = {
   // Card titles + card-level help (all hints move into the "?" bubble)
   petCardTitle: 'Pet',
   petCardHint:
-    'Per-pet settings: name / size / display / corner / offsets / the four feature switches. Click "Save" at the bottom to apply instantly.',
+    'Per-pet settings: name / size / display / corner / offsets / the four feature switches. Click "Save" at the bottom to apply instantly. Double-clicking the pet shows its balance (same action as the context menu).',
   globalTitle: 'Global switches',
   globalHint:
     'Shared by every pet (a pet pack may override them in its own kind file). These switches only change local state and are written to the user config on "Save" (never written immediately); system notifications re-read right after saving, no page refresh needed.',
@@ -622,7 +622,7 @@ export const en = {
   invalidReminder: 'Check the reminders: time must be HH:MM, message non-empty and up to 120 characters.',
   cycleTitle: 'Random show / hide',
   cycleHint:
-    'When enabled the pet leaves the desktop and comes back on its own: it stays visible for a random while, then hides for a random while. All four values are minutes in 1–120 and the minimum must not exceed the maximum. Speaking (whisper / chat / reminder) brings it back immediately and restarts the hide timer. Applies to the browser overlay; the desktop mode uses its own transparent-window renderer and is not affected yet.',
+    'When enabled the pet leaves the desktop and comes back on its own: it stays visible for a random while, then hides for a random while. All four values are minutes in 1–120 and the minimum must not exceed the maximum. Speaking (whisper / chat / reminder) brings it back immediately and restarts the hide timer. Works for both the in-page pet and the desktop-mode transparent window (which is simply hidden, so it never blocks clicks).',
   cycleToggle: 'Enable random show / hide',
   cycleToggleHint: 'Off = always visible (original behaviour). Only affects visibility, never config, animation or chat memory.',
   cycleVisibleMin: 'Visible at least (min)',

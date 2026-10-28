@@ -8,7 +8,7 @@ import { makePetConfigSection, NS, zh, en, petBridge } from './settings';
 import { initNotify } from './notify';
 import { installCommandFaces, type CommandFace, type CommandUiLike } from './command-faces';
 import { installSectionNavIcon } from './nav-icon';
-import { JT_NAV_ICON_SVG } from './brand';
+import { JT_NAV_MASK_URI } from './brand';
 import type * as ReactNS from 'react';
 import type * as PrimitivesNS from '@deepseek-ai/dsh-client-ui-primitives';
 
@@ -136,10 +136,11 @@ export function makeFactory(): (require: (mod: string) => any) => any {
 
       // 设置面板导航里「桌宠配置 JT」那一行的图标：DSH 的 navIcon 是按分区 id 硬编码的
       // 白名单 + 兜底齿轮，slot 契约里也没有图标位 —— 只能在 DOM 层补。
-      // 本分支换成自己的 Q 版 DeepSeek 小鲸鱼剪影（内联 SVG，不再依赖 primitives / react-dom：
-      // 图标模块缺失时也不该退化成一把齿轮）。依据与降级策略见 nav-icon.ts 的模块注释。
+      // 本分支用的是从生图图标抠出的 alpha 剪影（PNG data URI，mask 只吃 alpha），
+      // 比"渲一个图标组件再取 outerHTML"少一层依赖，16px 下也更平滑。
+      // 依据与降级策略见 nav-icon.ts 的模块注释。
       ctx.effect(
-        () => installSectionNavIcon({ label: () => t('nav'), renderSvg: () => JT_NAV_ICON_SVG }),
+        () => installSectionNavIcon({ label: () => t('nav'), maskUri: JT_NAV_MASK_URI }),
         'dsh-pet-jt: settings nav icon',
       );
 

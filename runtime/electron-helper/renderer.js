@@ -66,6 +66,9 @@ async function loadConfig() {
     // 字体（全局一份，合并器已填内置默认）：字体族在此取一次、注入全局变量；字号由每只宠物
     // 按自己的尺寸算（见 PetSprite 注入的 --dsh-pet-jt-font-bubble / --dsh-pet-jt-font-tip）
     font: (merged && merged.main && merged.main.font) || S.DEFAULT_FONT,
+    // 随机出现/隐藏（dsh-pet-jt 新增）：桌面端是「一只宠物一个透明窗口」，所以隐藏 = 主进程 hide
+    // 本窗口；缺失/未启用 = 一直显示（与上游行为一致）
+    visibilityCycle: (merged && merged.main && merged.main.visibilityCycle) || null,
   };
 }
 

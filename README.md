@@ -8,7 +8,9 @@
 
 - 上游：`PC2005-cloud/dsh-pet`（MIT），本仓库基于其 **0.3.8** 的源码与全部动画素材（`assets/webm`、字体、表情包、通知图标）。
 - 本分支不改上游已有的行为语义，只做**加法**：新增两个配置段、两块设置卡片、一条宿主定时器与一段客户端显隐调度。
-- 图标：`assets/logo-jt.svg`（Q 版 DeepSeek 小鲸鱼）；设置页导航用同一图形的剪影（`src/client/brand.ts`）。
+- 图标：`assets/logo-jt.png`（AI 生成的毛线帽小鲸鱼，512 → 256px）；设置页导航用同一张图抠出的
+  alpha 剪影（`src/client/brand.ts`，CSS mask 只吃 alpha）。另有 5 张生图候选在
+  [`assets/icon-candidates/`](assets/icon-candidates/)。
 
 ---
 
@@ -45,8 +47,16 @@
 - 任何一次说话（碎碎念 / 对话 / 定时提醒）都会让它立刻现身，并**从现在重新随机**下一次隐藏时间——
   不会出现「正说着话突然消失」。
 - 关闭开关 = 一直显示（等价原版行为）。
-- 作用范围：**浏览器 overlay**（网页里的桌宠）。桌面模式是独立的 Electron 透明窗口渲染器
-  （`runtime/electron-helper/`），目前不受此项影响。
+- 作用范围：**网页 overlay 与桌面模式的透明窗口都生效**。网页端是整只宠物淡出（组件不卸载，
+  动画/气泡/拖拽位置全保留）；桌面端是主进程 `win.hide()`（整窗消失，隐藏期间连点击穿透都不用管，
+  回来时 `showInactive()` 并重新钉一次置顶）。
+
+### 3. 双击查看余额
+
+- **双击宠物** = 查看余额，等价右键菜单里的「查看余额」：POST `/dsh-pet-jt-7340/balance`，
+  余额气泡由 `/state` 推送，网页端与桌面端行为一致。
+- 拖拽中、刚拖完、飞行中被按住的那一下不算双击（那是在玩宠物）。
+- 与「余额功能」开关无关：手动查看不受开关限制（开关只关自动轮询与档位动画）。
 
 ---
 
@@ -142,8 +152,12 @@ npm run typecheck                # tsc --noEmit
 | `src/host/index.ts` | `dsh-pet-jt: reminders` 定时器（启动对齐 15s，命中分钟写 `say` 叶子） |
 | `src/host/config.ts` | 读写两侧的整段校验 + `saveUserConfig` 白名单/透传 |
 | `src/client/settings.ts` | 两块新卡片（增删提醒、四个分钟输入）+ 保存时提交两段 |
-| `src/client/pet.ts` | 容器级显隐调度（随机时长、说话即现身）+ `hidden` 淡出 |
-| `src/client/brand.ts` | 设置页导航图标（Q 版小鲸鱼剪影） |
+| `src/client/pet.ts` | 容器级显隐调度（随机时长、说话即现身）+ `hidden` 淡出 + 双击查余额 |
+| `src/client/brand.ts` | 设置页导航图标（从生图图标抠出的 alpha 剪影，内联 PNG data URI） |
+| `runtime/electron-helper/sprite.js` | 桌面端显隐调度 + 双击查余额 |
+| `runtime/electron-helper/{main,preload}.js` | `pet:set-visible` 通道（窗口级 hide/showInactive） |
+| `scripts/dev/gen-icons.mjs` | 生图：调 pollinations（flux）出 5 张候选（免费层限速，串行 + 退避） |
+| `scripts/dev/prepare-icons.mjs` | 后处理：去水印、512 圆角 PNG、64px alpha 剪影 |
 | `assets/config.jsonc` | 内置默认值（带注释，设置页「同步」会整份写进用户层） |
 
 端到端验证脚本（需要 DSH 正在运行）：
@@ -157,12 +171,25 @@ node scripts/dev/e2e-reminder.mjs
 
 ## 六、已知限制
 
-- **桌面模式**（Electron 透明窗口）不参与「随机出现/隐藏」：那套渲染器是每只宠物一个窗口，
-  隐藏需要走窗口级 IPC，本分支没有改（`runtime/electron-helper/` 与上游一致）。
-  定时提醒**不受影响**：它写的是 `/state` 的 `say` 叶子，两端共用。
 - 提醒时间精度是「分钟」，对表间隔 15 秒；DSH 未运行期间错过的提醒不补发。
 - 每条任务只有「每天一个时刻」，没有「工作日 / 每 N 小时」之类的重复规则；
   需要一天多次就建多条任务（上限 40 条）。
+- 桌面端「显示/隐藏」是窗口级操作：隐藏期间若从托盘强制唤醒，下一次到点仍会按配置继续循环。
+
+---
+
+## 附：图标候选（AI 生图 5 张）
+
+用 `scripts/dev/gen-icons.mjs` 生成（flux 文生图，免费层限速 → 串行 + 退避），
+`scripts/dev/prepare-icons.mjs` 去水印并裁成圆角。当前生效的是 **c5**（毛线帽小鲸鱼）。
+
+| | | | | |
+|---|---|---|---|---|
+| ![c1](assets/icon-candidates/c1.png) | ![c2](assets/icon-candidates/c2.png) | ![c3](assets/icon-candidates/c3.png) | ![c4](assets/icon-candidates/c4.png) | ![c5](assets/icon-candidates/c5.png) |
+| c1 扁平贴纸 | c2 软 3D 玩偶 | c3 极简几何 | c4 喷水小鲸鱼 | **c5 毛线帽（当前）** |
+
+换图标：把选中的 `cN.png` 覆盖 `assets/logo-jt.png`（256×256 以内、≤256 KiB），
+再跑一次 `node scripts/dev/prepare-icons.mjs` 重新抠导航剪影、`npm run build` 重建即可。
 
 ---
 

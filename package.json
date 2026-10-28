@@ -1,8 +1,8 @@
 {
   "name": "dsh-pet-jt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "dsh-pet 的个性化增强分支（JT）：保留原插件全部桌宠能力，新增「定时提醒（自定义提示语，复用对话气泡）」与「随机出现/隐藏频率（各 1–120 分钟可调）」，可与原版 dsh-pet 同时安装、设置互不影响。",
-  "icon": "assets/logo-jt.svg",
+  "icon": "assets/logo-jt.png",
   "keywords": [
     "dsh",
     "dsh-plugin",

@@ -70,10 +70,15 @@ export interface SectionNavIcon {
    */
   label: () => string;
   /**
-   * 把图标渲成**内联 SVG 源码**。由调用方注入（app.ts 用 react-dom 渲染
-   * primitives 的图标组件），本模块因此不依赖 react / react-dom，测试可传替身。
+   * 把图标渲成**内联 SVG 源码**。与 `maskUri` 二选一（都没有时退化为齿轮）。
+   * 本分支改成直接给 `maskUri`：图标是生图出来的位图剪影，比"渲组件→取 outerHTML"省一步。
    */
-  renderSvg: () => string;
+  renderSvg?: () => string;
+  /**
+   * 已编码好的 CSS mask 值（形如 `url("data:image/png;base64,...")`）：给了就用它，
+   * 不再调 `renderSvg`。位图剪影只吃 alpha 通道，16px 下比 SVG 路径更平滑。
+   */
+  maskUri?: string;
 }
 
 /**
@@ -143,11 +148,15 @@ export function installSectionNavIcon(target: SectionNavIcon): () => void {
   }
 
   let glyph: string;
-  try {
-    glyph = svgMaskUri(target.renderSvg());
-  } catch (error) {
-    console.warn('[dsh-pet-jt] 设置页导航图标不可用：图标渲染失败（齿轮照旧）：' + describe(error));
-    return () => {};
+  if (typeof target.maskUri === 'string' && target.maskUri !== '') {
+    glyph = target.maskUri;
+  } else {
+    try {
+      glyph = svgMaskUri(target.renderSvg === undefined ? '' : target.renderSvg());
+    } catch (error) {
+      console.warn('[dsh-pet-jt] 设置页导航图标不可用：图标渲染失败（齿轮照旧）：' + describe(error));
+      return () => {};
+    }
   }
   if (glyph === '') {
     console.warn('[dsh-pet-jt] 设置页导航图标不可用：图标渲成了空 SVG（齿轮照旧）');

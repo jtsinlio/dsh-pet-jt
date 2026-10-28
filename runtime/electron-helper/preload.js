@@ -22,6 +22,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('petBridge', {
+  /** dsh-pet-jt：随机出现/隐藏——true = 显示本宠物窗口，false = 隐藏（主进程 hide/showInactive） */
+  setPetVisible(visible) {
+    ipcRenderer.send('pet:set-visible', visible === true);
+  },
   setBounds(x, y, width, height, boxX, boxY, size, bottomPad, vx, vy, marginL, marginT) {
     ipcRenderer.send('pet:set-bounds', {
       x,

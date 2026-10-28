@@ -7,3 +7,7 @@ _render/
 _shots/
 package-lock.json
 *.log
+# 本地调试用的临时截图脚本（会截到用户桌面，绝不入库）
+_capture*.ps1
+_test-gen.*
+_mask-preview.png

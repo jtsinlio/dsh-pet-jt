@@ -1,23 +1,17 @@
 /**
- * 品牌资源：dsh-pet-jt 的设置页导航图标（Q 版 DeepSeek 小鲸鱼）。
+ * 品牌资源：dsh-pet-jt 的设置页导航图标（从生图图标抠出的 alpha 剪影）。
  *
- * 为什么是一个内联 SVG 字符串而不是图片文件：
- *   DSH 的 `settings.section` 插槽没有图标位（导航图标按分区 id 硬编码 + 兜底齿轮），
- *   上游 dsh-pet 的做法是在 DOM 层给那一行补一个 CSS mask（见 ./nav-icon.ts）。mask 只吃
- *   **alpha 通道**，所以这里给的是"实心剪影"——圆形身体 + 尾巴 + 头顶水花，眼睛用
- *   evenodd 挖空。插件管理页/市场用的是彩色版 `assets/logo-jt.svg`（见 package.json 的 icon）。
+ * 为什么是「PNG 剪影 + CSS mask」而不是彩图：
+ *   DSH 的 settings.section 插槽没有图标位（导航图标按分区 id 硬编码 + 兜底齿轮），
+ *   上游 dsh-pet 的做法是在 DOM 层给那一行补一个 CSS mask（见 ./nav-icon.ts）。
+ *   mask 只吃 **alpha 通道**，所以这里准备的是透明底、白色主体的 64×64 剪影：
+ *   它由 assets/icon-candidates/c5.jpg（AI 生成的毛线帽小鲸鱼）按「与背景色的距离」抠图，
+ *   再用 scripts/dev/prepare-icons.mjs 缩到 64px（16px 显示时依然平滑）。
  *
- * 图形刻意做得比彩色版更"胖"：16px 下要能一眼认出是那条鲸鱼。
+ * 插件管理页 / 市场里显示的是彩色版 assets/logo-jt.png（package.json 的 icon）。
  */
-export const JT_NAV_ICON_SVG = [
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">',
-  // 头顶三颗水花
-  '<circle cx="9" cy="2.6" r="1.1"/>',
-  '<circle cx="12" cy="1.7" r="0.85"/>',
-  '<circle cx="15" cy="2.6" r="1.1"/>',
-  // 尾巴（右侧）
-  '<path d="M18.4 12.6c1.3-.5 2.2-1.5 2.6-2.9l1.1.6c-.3 1.6-1.3 2.8-2.7 3.5 1.4.7 2.4 1.9 2.7 3.5l-1.1.6c-.4-1.4-1.3-2.4-2.6-2.9z"/>',
-  // 身体 + 眼睛挖空（evenodd：外圈实体、内圈成洞）
-  '<path fill-rule="evenodd" d="M11.4 4.6a7.6 7.6 0 1 0 0 15.2 7.6 7.6 0 0 0 0-15.2zm-2.5 5.1a1.35 1.35 0 1 1 0 2.7 1.35 1.35 0 0 1 0-2.7zm5.1 0a1.35 1.35 0 1 1 0 2.7 1.35 1.35 0 0 1 0-2.7z"/>',
-  '</svg>',
-].join('');
+const NAV_MASK_PNG =
+  'data:image/png;base64,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';
+
+/** 可直接塞进 CSS mask 的值（nav-icon.ts 的 maskUri 参数就吃这个） */
+export const JT_NAV_MASK_URI = 'url("' + NAV_MASK_PNG + '")';

@@ -799,6 +799,22 @@ app.whenReady().then(() => {
 
   createPetWindows();
 
+  // 随机出现/隐藏（dsh-pet-jt 新增）：渲染端按 visibilityCycle 到点后请求隐藏/显示自己的窗口。
+  // **整窗 hide 而不是抹 DOM**：透明窗口本身就是"宠物在这块屏幕上存不存在"，隐藏后连点击穿透
+  // 都不用管；渲染端后台节流已关（setBackgroundThrottling(false)），隐藏期间动画与长轮询照常跑，
+  // 回来时是同一只宠物、同一段动画进度。
+  ipcMain.on('pet:set-visible', (event, visible) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win || win.isDestroyed()) return;
+    if (visible === true) {
+      if (!win.isVisible()) win.showInactive();
+      // 透明置顶窗口重新 show 后偶尔会掉出置顶层：顺手再钉一次（与 createPetWindow 同一档位）
+      win.setAlwaysOnTop(true, topmostLevel(process.platform));
+    } else if (win.isVisible()) {
+      win.hide();
+    }
+  });
+
   // 宠物窗口跟随：renderer 逐帧上报窗口内容区位置/尺寸
   ipcMain.on('pet:set-bounds', (event, bounds) => {
     const win = BrowserWindow.fromWebContents(event.sender);

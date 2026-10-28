@@ -315,7 +315,12 @@ function applySayLeaf(petId, leaf) {
   for (const s of sprites) {
     if (s.pet.id !== petId) continue;
     if (said.kind === 'clear') s.clearWhisper();
-    else s.showWhisper(said.text, said.image, said.url, said.duration, said.anim);
+    else {
+      s.showWhisper(said.text, said.image, said.url, said.duration, said.anim);
+      // 说话即现身（dsh-pet-jt）：定时提醒 / 对话回复 / 碎碎念 / 第三方投喂都会走到这里，
+      // 正在被"随机隐藏"的窗口要先叫回来，否则提示会在看不见的窗口里说完。
+      if (typeof s.wakeFromCycle === 'function') s.wakeFromCycle();
+    }
   }
 }
 

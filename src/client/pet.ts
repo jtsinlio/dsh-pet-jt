@@ -1945,6 +1945,22 @@ export function makePetUI(rt: {
         setTipOn(true);
       }
     };
+    /** 双击 = 查看余额（dsh-pet-jt 新增）。
+     *  与右键菜单「查看余额」完全同一条契约：POST 动作端点让 host 立即刷新并写入 S，
+     *  数据仍只有一个出口（/state 的 sections.balance）——这里不读响应、也不自己弹气泡。
+     *  拖拽/刚拖完的双击不算（那是在玩宠物，不是在查余额）。 */
+    const handleDoubleClick = (e: ReactNS.MouseEvent<HTMLDivElement>) => {
+      const d = dragRef.current;
+      if (d.active || d.dragging || justDraggedRef.current) return;
+      e.preventDefault();
+      console.info('[dsh-pet-jt] 双击查看余额 pet=' + cfg.id);
+      postAction('/dsh-pet-jt-7340/balance')
+        .then((ok: boolean) => {
+          if (!ok) console.warn('[dsh-pet-jt] 双击余额刷新未成功 pet=' + cfg.id);
+        })
+        .catch((err: unknown) => console.warn('[dsh-pet-jt] 双击余额刷新异常', err));
+    };
+
     const handleClick = () => {
       const d = dragRef.current;
       if (d.active || d.dragging || justDraggedRef.current) return;
@@ -2204,6 +2220,9 @@ export function makePetUI(rt: {
         height: ((HIT_BOX.y1 - HIT_BOX.y0) / 360) * 100 + '%',
       },
       onClick: handleClick,
+      // 双击 = 查看余额（dsh-pet-jt 新增）：与右键菜单「查看余额」同一个动作端点，
+      // 所以视觉反馈一致（余额气泡由 /state 推送，这里只负责让它刷新一次）。
+      onDoubleClick: handleDoubleClick,
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,

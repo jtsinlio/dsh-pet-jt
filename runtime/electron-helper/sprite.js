@@ -231,6 +231,9 @@ class PetSprite {
     this.hit.addEventListener('pointerdown', (e) => this.onPointerDown(e), { signal: ac.signal });
     this.hit.addEventListener('pointermove', (e) => this.onPointerMove(e), { signal: ac.signal });
     this.hit.addEventListener('click', (e) => this.onClick(e), { signal: ac.signal });
+    // 双击 = 查看余额（dsh-pet-jt 新增）：与右键菜单「查看余额」同一个动作端点，
+    // 所以视觉反馈完全一致（余额气泡由 /state 推送，这里只负责"让它刷新"）。
+    this.hit.addEventListener('dblclick', (e) => this.onDoubleClick(e), { signal: ac.signal });
     this.hit.addEventListener('contextmenu', (e) => this.onContextMenu(e), { signal: ac.signal });
     window.addEventListener('pointerup', (e) => this.onPointerUp(e), { signal: ac.signal });
     window.addEventListener('pointercancel', (e) => this.onPointerUp(e), { signal: ac.signal });
@@ -292,6 +295,88 @@ class PetSprite {
         if (Number.isFinite(vx) && Number.isFinite(vy)) this.onDeskHit(toLocal(vx), toLocal(vy));
       });
     }
+
+    // 随机出现/隐藏（dsh-pet-jt 新增）：窗口级调度，配置来自 config.visibilityCycle。
+    this.visibilityTimer = null;
+    this.hiddenByCycle = false;
+    this.armVisibilityCycle();
+  }
+
+  // ---- 随机出现 / 隐藏（dsh-pet-jt 新增）----
+  /**
+   * 启动/重排"出现→隐藏→出现"的随机循环。
+   *
+   * 语义与浏览器 overlay 完全一致（同一份配置段、同一套 1~120 分钟区间）：
+   *   出现后随机 [visibleMin, visibleMax] 分钟隐藏；隐藏后随机 [hiddenMin, hiddenMax] 分钟出现。
+   * 桌面端与网页端的差别只在"隐藏"的落地方式：这里是主进程 `win.hide()`，
+   * 所以宠物从这块屏幕上彻底消失（不再吃任何点击），而不是淡出成一层透明挡板。
+   */
+  armVisibilityCycle() {
+    const raw = config && config.visibilityCycle;
+    if (this.visibilityTimer !== null) {
+      window.clearTimeout(this.visibilityTimer);
+      this.visibilityTimer = null;
+    }
+    if (!raw || raw.enabled !== true) return;
+    // 归一：与 src/shared/extras.ts 的 normalizeCycle 同口径（1~120，端点写反就对调）
+    const num = (v, d) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 1 && n <= 120 ? n : d;
+    };
+    const vMin = num(raw.visibleMin, 30);
+    const vMax = num(raw.visibleMax, 60);
+    const hMin = num(raw.hiddenMin, 10);
+    const hMax = num(raw.hiddenMax, 30);
+    let hidden = this.hiddenByCycle === true;
+    const arm = () => {
+      const lo = hidden ? Math.min(hMin, hMax) : Math.min(vMin, vMax);
+      const hi = hidden ? Math.max(hMin, hMax) : Math.max(vMin, vMax);
+      const ms = Math.max(1000, Math.round((lo + Math.random() * (hi - lo)) * 60_000));
+      this.visibilityTimer = window.setTimeout(() => {
+        hidden = !hidden;
+        this.hiddenByCycle = hidden;
+        this.setWindowVisible(!hidden);
+        arm();
+      }, ms);
+    };
+    arm();
+  }
+
+  /** 请主进程显示/隐藏本宠物窗口（preload 未注入时静默跳过，绝不影响其它功能） */
+  setWindowVisible(visible) {
+    const bridge = window.petBridge;
+    if (!bridge || typeof bridge.setPetVisible !== 'function') return;
+    try {
+      bridge.setPetVisible(visible === true);
+    } catch (e) {
+      console.warn('[dsh-pet-jt] 隐藏/显示窗口失败', e);
+    }
+  }
+
+  /**
+   * 说话即现身：碎碎念 / 对话回复 / 定时提醒 / 第三方投喂都会走到这里——
+   * 正在隐藏时把宠物叫回桌面，并从"现在"重新随机下一次隐藏时间。
+   * 与浏览器端 say 分发处的语义一致（否则"该喝水了"会在看不见的窗口里说完）。
+   */
+  wakeFromCycle() {
+    const raw = config && config.visibilityCycle;
+    if (!raw || raw.enabled !== true) return;
+    if (!this.hiddenByCycle) {
+      // 没在隐藏：只把"下一次隐藏"从现在重排，避免说话途中被藏起来
+      if (this.visibilityTimer !== null) this.armVisibilityCycle();
+      return;
+    }
+    this.hiddenByCycle = false;
+    this.setWindowVisible(true);
+    this.armVisibilityCycle();
+  }
+
+  /** 双击宠物 = 查看余额（与右键菜单同一动作端点） */
+  onDoubleClick(e) {
+    const d = this.dragState;
+    if (d.active || d.dragging || this.justDragged) return;
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    this.showBalanceFromMenu();
   }
 
   dispose() {
@@ -302,6 +387,11 @@ class PetSprite {
     if (this.bubbleTimer !== null) window.clearTimeout(this.bubbleTimer);
     if (this.whisperTimer !== null) window.clearTimeout(this.whisperTimer);
     if (this.workTimer !== null) window.clearTimeout(this.workTimer);
+    // 随机出现/隐藏的定时器：卸载后到点再 hide 一个已销毁窗口会刷错误日志
+    if (this.visibilityTimer !== null) {
+      window.clearTimeout(this.visibilityTimer);
+      this.visibilityTimer = null;
+    }
     if (this.chatClose) {
       this.chatClose();
       this.chatClose = null;
