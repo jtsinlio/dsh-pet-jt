@@ -178,18 +178,30 @@ node scripts/dev/e2e-reminder.mjs
 
 ---
 
-## 附：图标候选（AI 生图 5 张）
+## 附：图标候选
 
-用 `scripts/dev/gen-icons.mjs` 生成（flux 文生图，免费层限速 → 串行 + 退避），
-`scripts/dev/prepare-icons.mjs` 去水印并裁成圆角。当前生效的是 **c5**（毛线帽小鲸鱼）。
+### A. 极简线条版（矢量，推荐）—— 真正满足「单色等宽线条 + Q 版可爱鲸鱼」
+
+文生图模型（pollinations 免费层的 sana）**出不了纯线条**：换了好几套提示词（line art / no fill /
+coloring book / 单色描边），出来都是 3D 或渐变插画。所以这 10 张改用**代码画 SVG**：
+线条等宽（stroke 13/256）、圆头圆角、品牌蓝 `#4D6BFE`，任意尺寸都清晰，改颜色/线宽直接编辑源文件。
+
+![10 个线条 logo 一览](assets/icon-candidates/line/vector-sheet.png)
 
 | | | | | |
 |---|---|---|---|---|
-| ![c1](assets/icon-candidates/c1.png) | ![c2](assets/icon-candidates/c2.png) | ![c3](assets/icon-candidates/c3.png) | ![c4](assets/icon-candidates/c4.png) | ![c5](assets/icon-candidates/c5.png) |
-| c1 扁平贴纸 | c2 软 3D 玩偶 | c3 极简几何 | c4 喷水小鲸鱼 | **c5 毛线帽（当前）** |
+| ![v1](assets/icon-candidates/line/vector-1.png) | ![v2](assets/icon-candidates/line/vector-2.png) | ![v3](assets/icon-candidates/line/vector-3.png) | ![v4](assets/icon-candidates/line/vector-4.png) | ![v5](assets/icon-candidates/line/vector-5.png) |
+| v1 基础 | v2 喷水 | v3 徽章 | v4 泡泡 | v5 帽子围巾 |
+| ![v6](assets/icon-candidates/line/vector-6.png) | ![v7](assets/icon-candidates/line/vector-7.png) | ![v8](assets/icon-candidates/line/vector-8.png) | ![v9](assets/icon-candidates/line/vector-9.png) | ![v10](assets/icon-candidates/line/vector-10.png) |
+| v6 抱心 | v7 睡觉 | v8 小鱼朋友 | v9 眼镜 | v10 领结 |
 
-换图标：把选中的 `cN.png` 覆盖 `assets/logo-jt.png`（256×256 以内、≤256 KiB），
-再跑一次 `node scripts/dev/prepare-icons.mjs` 重新抠导航剪影、`npm run build` 重建即可。
+生成方式：`node scripts/dev/gen-vector-logos.mjs`（参数化 SVG → sharp 渲染 PNG + 拼图）。
+换图标：把选中的 `vector-N.svg` 导出 256px PNG 覆盖 `assets/logo-jt.png`，或直接改脚本里的 `INK` / `SW` 重新生成。
+
+### B. AI 文生图版（插画风，10 张）
+
+`l1..l10.jpg` 是同一批需求的**生图**结果（coloring-book 提示词 + 免费层限速）；
+模型给的是填充插画而非线条，保留在仓库里作为对照。生成脚本：`scripts/dev/gen-line-icons.mjs`。
 
 ---
 
